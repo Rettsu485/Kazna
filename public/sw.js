@@ -1,22 +1,11 @@
-// Service Worker для PWA
-const CACHE_NAME = 'kazna-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-];
+const CACHE_NAME = 'kazna-v2';
 
-// Установка — кэшируем базовые ресурсы
+// Установка
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
-  );
   self.skipWaiting();
 });
 
-// Активация — удаляем старые кэши
+// Активация
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -28,14 +17,13 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch — стратегия Network First с fallback на кэш
+// Fetch — Network First
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Клонируем ответ для кэша
         const responseClone = response.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseClone);
@@ -43,9 +31,8 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Если нет сети — отдаём из кэша
         return caches.match(event.request).then((response) => {
-          return response || caches.match('/index.html');
+          return response || caches.match('/');
         });
       })
   );

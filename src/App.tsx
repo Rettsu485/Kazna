@@ -18,7 +18,6 @@ function App() {
     initialize();
   }, [initialize]);
 
-  // Применяем тему
   useEffect(() => {
     if (settings.theme === 'dark') {
       document.documentElement.classList.add('dark');
@@ -29,22 +28,36 @@ function App() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-4">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full text-center shadow-xl">
-          <div className="text-5xl mb-4">💰</div>
-          <h1 className="text-2xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            ФинТрекер
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={{
+          background: 'linear-gradient(135deg, var(--md-primary) 0%, var(--md-primary-container) 100%)',
+        }}
+      >
+        <div
+          className="rounded-[28px] p-8 max-w-sm w-full text-center md-elevation-3"
+          style={{ backgroundColor: 'var(--md-surface-container-low)' }}
+        >
+          <div
+            className="w-20 h-20 mx-auto mb-5 rounded-[20px] flex items-center justify-center text-4xl"
+            style={{ backgroundColor: 'var(--md-primary-container)', color: 'var(--md-on-primary-container)' }}
+          >
+            💰
+          </div>
+          <h1 className="text-3xl font-bold mb-2 tracking-tight" style={{ color: 'var(--md-on-surface)' }}>
+            Казна
           </h1>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm mb-6" style={{ color: 'var(--md-on-surface-variant)' }}>
             Личный финансовый трекер с бюджетами, долгами, аналитикой и PWA
           </p>
           <button
             onClick={() => useStore.getState().login()}
-            className="w-full py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+            className="w-full py-4 rounded-full font-medium text-sm md-elevation-1"
+            style={{ backgroundColor: 'var(--md-primary)', color: 'var(--md-on-primary)' }}
           >
             Начать
           </button>
-          <p className="text-xs text-gray-400 mt-4">
+          <p className="text-xs mt-4" style={{ color: 'var(--md-on-surface-variant)' }}>
             Данные хранятся локально в вашем браузере
           </p>
         </div>

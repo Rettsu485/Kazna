@@ -1,16 +1,16 @@
 {
-  "name": "ФинТрекер — Личный финансовый трекер",
-  "short_name": "ФинТрекер",
+  "name": "Казна — Личный финансовый трекер",
+  "short_name": "Казна",
   "description": "Управляйте финансами, бюджетами, долгами и целями",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f9fafb",
-  "theme_color": "#3B82F6",
+  "background_color": "#FEF7FF",
+  "theme_color": "#6750A4",
   "orientation": "portrait-primary",
   "lang": "ru-RU",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%233B82F6'/><text x='256' y='340' font-size='280' text-anchor='middle' fill='white'>₽</text></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='96' fill='%236750A4'/><text x='256' y='340' font-size='280' text-anchor='middle' fill='white'>₽</text></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"

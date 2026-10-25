@@ -1,37 +1,26 @@
-// ===== Страница долгов =====
+// ===== Долги в стиле Material Design 3 =====
 import { useMemo, useState } from 'react';
 import { useStore } from '../store';
-import { formatMoney } from '../utils/money';
-import { formatDateRu, relativeDate } from '../utils/dates';
-import { TrendingDown, AlertTriangle, Calculator, Snowflake, Flame } from 'lucide-react';
+import { formatMoney, formatMoneyShort } from '../utils/money';
+import { Calculator, Snowflake, Flame } from 'lucide-react';
 
 export default function Debts() {
-  const { debts, accounts, recurringRules } = useStore();
+  const { debts } = useStore();
   const [strategy, setStrategy] = useState<'avalanche' | 'snowball'>('avalanche');
   const [extraPayment, setExtraPayment] = useState('');
   const [selectedDebt, setSelectedDebt] = useState<string | null>(null);
 
   const activeDebts = debts.filter(d => d.status === 'active');
-  const totalDebt = activeDebts
-    .filter(d => d.direction === 'liability')
-    .reduce((sum, d) => sum + d.principalBalanceMinor, 0);
+  const totalDebt = activeDebts.filter(d => d.direction === 'liability').reduce((sum, d) => sum + d.principalBalanceMinor, 0);
+  const totalMonthly = activeDebts.filter(d => d.direction === 'liability').reduce((sum, d) => sum + d.monthlyPaymentMinor, 0);
 
-  const totalMonthly = activeDebts
-    .filter(d => d.direction === 'liability')
-    .reduce((sum, d) => sum + d.monthlyPaymentMinor, 0);
-
-  // Стратегии погашения
   const sortedDebts = useMemo(() => {
     const sorted = [...activeDebts].filter(d => d.direction === 'liability');
-    if (strategy === 'avalanche') {
-      sorted.sort((a, b) => b.interestRate - a.interestRate);
-    } else {
-      sorted.sort((a, b) => a.principalBalanceMinor - b.principalBalanceMinor);
-    }
+    if (strategy === 'avalanche') sorted.sort((a, b) => b.interestRate - a.interestRate);
+    else sorted.sort((a, b) => a.principalBalanceMinor - b.principalBalanceMinor);
     return sorted;
   }, [activeDebts, strategy]);
 
-  // Симулятор досрочного погашения
   const simulateEarlyPayoff = (debt: typeof activeDebts[0], extraMonthlyMinor: number) => {
     if (!debt || extraMonthlyMinor <= 0) return null;
     const monthlyRate = debt.interestRate / 100 / 12;
@@ -39,7 +28,6 @@ export default function Debts() {
     let months = 0;
     let totalInterest = 0;
     const monthlyPayment = debt.monthlyPaymentMinor + extraMonthlyMinor;
-
     while (balance > 0 && months < 600) {
       const interest = Math.round(balance * monthlyRate);
       totalInterest += interest;
@@ -47,8 +35,6 @@ export default function Debts() {
       balance -= principal;
       months++;
     }
-
-    // Обычный график
     let normalBalance = debt.principalBalanceMinor;
     let normalMonths = 0;
     let normalInterest = 0;
@@ -59,13 +45,7 @@ export default function Debts() {
       normalBalance -= principal;
       normalMonths++;
     }
-
-    return {
-      months,
-      totalInterest,
-      savedMonths: normalMonths - months,
-      savedInterest: normalInterest - totalInterest,
-    };
+    return { months, totalInterest, savedMonths: normalMonths - months, savedInterest: normalInterest - totalInterest };
   };
 
   const selectedDebtObj = activeDebts.find(d => d.id === selectedDebt);
@@ -73,143 +53,136 @@ export default function Debts() {
   const simulation = selectedDebtObj ? simulateEarlyPayoff(selectedDebtObj, extraMinor) : null;
 
   return (
-    <div className="space-y-4 max-w-4xl mx-auto">
-      {/* Общий долг */}
-      <div className="bg-gradient-to-r from-red-500 to-orange-600 rounded-xl p-5 text-white">
-        <p className="text-sm opacity-80">Общий долг</p>
-        <p className="text-3xl font-bold mt-1">{formatMoney(totalDebt)}</p>
-        <p className="text-sm opacity-80 mt-1">Ежемесячный платёж: {formatMoney(totalMonthly)}</p>
+    <div className="space-y-4 animate-fade-in">
+      {/* Hero */}
+      <div
+        className="rounded-3xl p-5 md-elevation-2"
+        style={{
+          background: 'linear-gradient(135deg, #B3261E 0%, #F9DEDC 100%)',
+          color: 'white',
+        }}
+      >
+        <p className="text-xs opacity-80 uppercase tracking-wider font-medium">Общий долг</p>
+        <p className="text-3xl font-bold mt-1 tabular-nums tracking-tight">{formatMoneyShort(totalDebt)}</p>
+        <p className="text-sm opacity-80 mt-1 tabular-nums">Платёж: {formatMoneyShort(totalMonthly)}/мес</p>
       </div>
 
-      {/* Стратегия */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
+      {/* Стратегия — segmented control */}
+      <div className="rounded-3xl p-4 md-elevation-1" style={{ backgroundColor: 'var(--md-surface-container-low)' }}>
         <h3 className="text-sm font-semibold mb-3">Стратегия погашения</h3>
-        <div className="flex gap-2">
+        <div className="flex rounded-full p-1 gap-1" style={{ backgroundColor: 'var(--md-surface-container-high)' }}>
           <button
             onClick={() => setStrategy('avalanche')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium ${
-              strategy === 'avalanche'
-                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-            }`}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full text-xs font-medium transition-all"
+            style={{
+              backgroundColor: strategy === 'avalanche' ? 'var(--md-secondary-container)' : 'transparent',
+              color: strategy === 'avalanche' ? 'var(--md-on-secondary-container)' : 'var(--md-on-surface-variant)',
+            }}
           >
-            <Flame size={16} /> Лавина
+            <Flame size={14} /> Лавина
           </button>
           <button
             onClick={() => setStrategy('snowball')}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium ${
-              strategy === 'snowball'
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-            }`}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-full text-xs font-medium transition-all"
+            style={{
+              backgroundColor: strategy === 'snowball' ? 'var(--md-secondary-container)' : 'transparent',
+              color: strategy === 'snowball' ? 'var(--md-on-secondary-container)' : 'var(--md-on-surface-variant)',
+            }}
           >
-            <Snowflake size={16} /> Снежный ком
+            <Snowflake size={14} /> Снежный ком
           </button>
         </div>
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs mt-2" style={{ color: 'var(--md-on-surface-variant)' }}>
           {strategy === 'avalanche'
-            ? 'Сначала закрываем долг с максимальной ставкой — экономим на процентах'
-            : 'Сначала закрываем самый маленький долг — быстрее видим результат'}
+            ? 'Сначала долг с максимальной ставкой — экономим на %'
+            : 'Сначала самый маленький долг — быстрый результат'}
         </p>
       </div>
 
       {/* Список долгов */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {sortedDebts.map((debt, idx) => (
           <div
             key={debt.id}
-            className={`bg-white dark:bg-gray-800 rounded-xl p-4 border cursor-pointer transition-colors ${
-              debt.id === selectedDebt
-                ? 'border-blue-300 dark:border-blue-700 ring-2 ring-blue-100 dark:ring-blue-900'
-                : 'border-gray-100 dark:border-gray-700'
-            }`}
             onClick={() => setSelectedDebt(debt.id === selectedDebt ? null : debt.id)}
+            className="p-4 rounded-2xl md-elevation-1 cursor-pointer transition-all active:scale-[0.99]"
+            style={{
+              backgroundColor: debt.id === selectedDebt ? 'var(--md-primary-container)' : 'var(--md-surface-container-low)',
+              color: debt.id === selectedDebt ? 'var(--md-on-primary-container)' : 'var(--md-on-surface)',
+            }}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {strategy === 'avalanche' && idx === 0 && (
-                  <span className="w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
-                )}
-                {strategy === 'snowball' && idx === 0 && (
-                  <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+                {idx === 0 && (
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                    style={{
+                      backgroundColor: strategy === 'avalanche' ? 'var(--md-error-container)' : 'var(--md-primary-container)',
+                      color: strategy === 'avalanche' ? 'var(--md-on-error-container)' : 'var(--md-on-primary-container)',
+                    }}
+                  >
+                    1
+                  </div>
                 )}
                 <div>
-                  <p className="font-medium">{debt.name}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="font-medium text-sm">{debt.name}</p>
+                  <p className="text-xs" style={{ color: debt.id === selectedDebt ? 'var(--md-on-primary-container)' : 'var(--md-on-surface-variant)', opacity: 0.8 }}>
                     {debt.type === 'credit_card' ? 'Кредитная карта' : debt.type === 'loan' ? 'Кредит' : 'Долг'}
                     {debt.interestRate > 0 && ` • ${debt.interestRate}%`}
-                    {debt.paymentDay > 0 && ` • платёж ${debt.paymentDay} числа`}
+                    {debt.paymentDay > 0 && ` • ${debt.paymentDay} числа`}
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold text-red-600">{formatMoney(debt.principalBalanceMinor)}</p>
-                <p className="text-xs text-gray-500">{formatMoney(debt.monthlyPaymentMinor)}/мес</p>
+                <p className="text-lg font-bold tabular-nums">{formatMoneyShort(debt.principalBalanceMinor)}</p>
+                <p className="text-xs tabular-nums" style={{ opacity: 0.7 }}>{formatMoneyShort(debt.monthlyPaymentMinor)}/мес</p>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Симулятор досрочного погашения */}
+      {/* Симулятор */}
       {selectedDebtObj && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 space-y-3">
+        <div className="rounded-3xl p-4 space-y-3 md-elevation-1" style={{ backgroundColor: 'var(--md-surface-container-low)' }}>
           <h3 className="text-sm font-semibold flex items-center gap-2">
             <Calculator size={16} />
-            Симулятор: «{selectedDebtObj.name}»
+            Досрочное погашение: «{selectedDebtObj.name}»
           </h3>
           <div>
-            <label className="text-xs text-gray-500">Дополнительно в месяц (₽)</label>
+            <label className="text-xs" style={{ color: 'var(--md-on-surface-variant)' }}>Дополнительно в месяц (₽)</label>
             <input
               type="text"
               inputMode="decimal"
               placeholder="0"
               value={extraPayment}
               onChange={e => setExtraPayment(e.target.value.replace(/[^0-9.,]/g, ''))}
-              className="w-full mt-1 px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm"
+              className="w-full mt-1 px-4 py-3 rounded-xl text-sm"
+              style={{ backgroundColor: 'var(--md-surface-container)', color: 'var(--md-on-surface)' }}
             />
           </div>
           {simulation && extraMinor > 0 && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
-                <p className="text-xs text-gray-500">Сокращение срока</p>
-                <p className="text-lg font-bold text-green-600">−{simulation.savedMonths} мес</p>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="rounded-2xl p-3" style={{ backgroundColor: '#E8F5E9' }}>
+                <p className="text-[10px]" style={{ color: '#1B5E20' }}>Сокращение срока</p>
+                <p className="text-lg font-bold tabular-nums" style={{ color: '#1B5E20' }}>−{simulation.savedMonths} мес</p>
               </div>
-              <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
-                <p className="text-xs text-gray-500">Экономия на %</p>
-                <p className="text-lg font-bold text-green-600">{formatMoney(simulation.savedInterest)}</p>
+              <div className="rounded-2xl p-3" style={{ backgroundColor: '#E8F5E9' }}>
+                <p className="text-[10px]" style={{ color: '#1B5E20' }}>Экономия на %</p>
+                <p className="text-lg font-bold tabular-nums" style={{ color: '#1B5E20' }}>{formatMoneyShort(simulation.savedInterest)}</p>
               </div>
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                <p className="text-xs text-gray-500">Новый срок</p>
-                <p className="text-lg font-bold text-blue-600">{simulation.months} мес</p>
+              <div className="rounded-2xl p-3" style={{ backgroundColor: 'var(--md-primary-container)' }}>
+                <p className="text-[10px]" style={{ color: 'var(--md-on-primary-container)' }}>Новый срок</p>
+                <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--md-on-primary-container)' }}>{simulation.months} мес</p>
               </div>
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
-                <p className="text-xs text-gray-500">Всего процентов</p>
-                <p className="text-lg font-bold text-blue-600">{formatMoney(simulation.totalInterest)}</p>
+              <div className="rounded-2xl p-3" style={{ backgroundColor: 'var(--md-primary-container)' }}>
+                <p className="text-[10px]" style={{ color: 'var(--md-on-primary-container)' }}>Всего %</p>
+                <p className="text-lg font-bold tabular-nums" style={{ color: 'var(--md-on-primary-container)' }}>{formatMoneyShort(simulation.totalInterest)}</p>
               </div>
             </div>
           )}
         </div>
       )}
-
-      {/* Ближайшие платежи */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700">
-        <h3 className="text-sm font-semibold mb-3">Календарь платежей</h3>
-        <div className="space-y-2">
-          {activeDebts
-            .filter(d => d.direction === 'liability' && d.paymentDay > 0)
-            .sort((a, b) => a.paymentDay - b.paymentDay)
-            .map(debt => (
-              <div key={debt.id} className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-700 last:border-0">
-                <div>
-                  <p className="text-sm font-medium">{debt.name}</p>
-                  <p className="text-xs text-gray-500">{debt.paymentDay} числа каждого месяца</p>
-                </div>
-                <span className="text-sm font-semibold">{formatMoney(debt.monthlyPaymentMinor)}</span>
-              </div>
-            ))}
-        </div>
-      </div>
     </div>
   );
 }

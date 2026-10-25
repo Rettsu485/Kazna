@@ -385,6 +385,17 @@ export default function SettingsPage() {
               <p>Локаль: ru-RU • Валюта: {settings.currency}</p>
             </div>
           </div>
+          <a
+            href="#/install"
+            className="flex items-center gap-3 p-4 rounded-2xl md-elevation-1 transition-all active:scale-[0.99]"
+            style={{ backgroundColor: 'var(--md-primary-container)', color: 'var(--md-on-primary-container)' }}
+          >
+            <span className="text-xl">📱</span>
+            <div className="flex-1">
+              <p className="text-sm font-medium">Установить на телефон</p>
+              <p className="text-xs opacity-80">Инструкция для Android и iPhone</p>
+            </div>
+          </a>
         </div>
       )}
     </div>

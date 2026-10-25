@@ -7,6 +7,7 @@ import {
   Target, TrendingUp, Settings, Menu, X, Moon, Sun, Wallet,
   BarChart3
 } from 'lucide-react';
+import { InstallBanner } from './InstallBanner';
 
 const NAV_ITEMS = [
   { path: '/', label: 'Обзор', icon: LayoutDashboard },
@@ -157,6 +158,9 @@ export default function Layout({ children }: { children: ReactNode }) {
           {children}
         </main>
       </div>
+
+      {/* Install banner */}
+      <InstallBanner />
 
       {/* Mobile bottom navigation */}
       <nav

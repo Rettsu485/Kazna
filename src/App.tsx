@@ -10,6 +10,7 @@ import Debts from './components/Debts';
 import Analytics from './components/Analytics';
 import Goals from './components/Goals';
 import SettingsPage from './components/Settings';
+import InstallGuide from './components/InstallGuide';
 
 function App() {
   const { isAuthenticated, initialize, settings } = useStore();
@@ -78,6 +79,7 @@ function App() {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/goals" element={<Goals />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/install" element={<InstallGuide />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>
